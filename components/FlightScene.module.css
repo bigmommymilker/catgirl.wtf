@@ -1,0 +1,85 @@
+.scene {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  width: 100%;
+  min-height: 440px;
+  height: 100%;
+  background: radial-gradient(ellipse at 50% 55%, #d7e7d6 0%, #bad6cb 42%, #91b9b2 100%);
+}
+.skyGrain {
+  position: absolute;
+  inset: 0;
+  opacity: .22;
+  background-image: radial-gradient(#f8fff2 0.7px, transparent 0.8px);
+  background-size: 7px 7px;
+  pointer-events: none;
+}
+.globe {
+  position: absolute;
+  width: min(53%, 450px);
+  aspect-ratio: 1;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -46%);
+  border-radius: 50%;
+  box-shadow: inset -20px -25px 50px #527f7955, 0 30px 70px #355d5738, 0 0 0 16px #e6f3df23, 0 0 0 45px #e6f3df17;
+}
+.globeArt { width: 100%; height: 100%; filter: drop-shadow(0 3px 4px #355d5722); }
+.orbitOne, .orbitTwo, .orbitThree {
+  position: absolute;
+  top: 52%; left: 50%;
+  width: 75%; height: 35%;
+  border: 1px dashed #fffbe899;
+  border-radius: 50%;
+  transform: translate(-50%, -50%) rotate(-26deg);
+  pointer-events: none;
+}
+.orbitTwo { width: 66%; height: 51%; transform: translate(-50%, -50%) rotate(30deg); opacity: .55; }
+.orbitThree { width: 88%; height: 42%; transform: translate(-50%, -50%) rotate(8deg); opacity: .38; }
+.flight {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  border: 0;
+  padding: 0;
+  color: #1c383a;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+}
+.planeWrap { display: block; width: clamp(54px, 7vw, 91px); transform: rotate(var(--plane-rotation)); animation: drift 4.5s ease-in-out var(--flight-delay) infinite; transition: scale .2s ease; filter: drop-shadow(0 7px 4px #2d595540); }
+.plane { display: block; width: 100%; }
+.flight:hover .planeWrap, .flight:focus-visible .planeWrap { scale: 1.17; }
+.flight:focus-visible { outline: 2px solid #163d3d; outline-offset: 6px; border-radius: 4px; }
+.tag { max-width: 160px; padding: 5px 8px; border: 1px solid #456b6255; border-radius: 2px; background: #f5f4e5e8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font: 700 10px/1.1 'Nunito', 'Trebuchet MS', sans-serif; letter-spacing: .05em; text-transform: uppercase; }
+.tag span { color: #9b6655; margin-right: 3px; }
+.coordinates { position: absolute; bottom: 20px; left: 24px; color: #365e5a; font: 700 9px/1.2 'Nunito', 'Trebuchet MS', sans-serif; letter-spacing: .14em; }
+.coordinates span { margin: 0 6px; }
+
+/* The night sky keeps the planes light and makes their labels easy to read. */
+:global([data-theme='dark']) .scene { background: radial-gradient(ellipse at 50% 55%, #345c58 0%, #203c3a 50%, #142b2b 100%); }
+:global([data-theme='dark']) .skyGrain { opacity: .1; }
+:global([data-theme='dark']) .globe { box-shadow: inset -20px -25px 50px #081c1c99, 0 30px 70px #08151480, 0 0 0 16px #aac6a518, 0 0 0 45px #aac6a50c; }
+:global([data-theme='dark']) .globeArt > g > circle { fill: #4d7770; }
+:global([data-theme='dark']) .globeArt > g > path { fill: #abc0aa; }
+:global([data-theme='dark']) .orbitOne,
+:global([data-theme='dark']) .orbitTwo,
+:global([data-theme='dark']) .orbitThree { border-color: #bed2bf80; }
+:global([data-theme='dark']) .flight:focus-visible { outline-color: #f1c8ad; }
+:global([data-theme='dark']) .tag { background: #173432f5; border-color: #a7c5b4; color: #f0f5e9; }
+:global([data-theme='dark']) .tag span { color: #f2bca3; }
+:global([data-theme='dark']) .coordinates { color: #d9e9d9; }
+
+@keyframes drift { 0%, 100% { translate: 0 0; } 50% { translate: 0 -10px; } }
+@media (max-width: 600px) {
+  .scene { min-height: 390px; }
+  .globe { width: 65%; }
+  .tag { max-width: 110px; font-size: 8px; }
+  .coordinates { bottom: 12px; left: 12px; font-size: 8px; }
+}
+@media (prefers-reduced-motion: reduce) { .planeWrap { animation: none; transition: none; } }
