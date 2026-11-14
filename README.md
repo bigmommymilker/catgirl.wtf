@@ -2,6 +2,10 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 ## Getting Started
 
+Use Node.js 22 or newer, preferably a supported LTS release. Node.js 26 LTS
+was used to verify this project. Install dependencies with
+`npm ci` before running the commands below.
+
 First, run the development server:
 
 ```bash
