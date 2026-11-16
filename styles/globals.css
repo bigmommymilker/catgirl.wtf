@@ -33,5 +33,10 @@ html[data-theme='dark'] { color-scheme: dark; }
 html[data-theme='dark'] body { background: #171f1e; color: #edf2e8; }
 a { color: inherit; text-decoration: none; }
 button, a { font: inherit; }
-button:focus-visible, a:focus-visible { outline: 3px solid #c57b63; outline-offset: 4px; }
+:focus-visible { outline:3px solid #87503e; outline-offset:4px; }
+html[data-theme='dark'] :focus-visible { outline-color:#efae96; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
+
+body { overflow-wrap:break-word; }
+button { min-height:24px; }
+@media (forced-colors: active) { :focus-visible { outline:3px solid Highlight; } }

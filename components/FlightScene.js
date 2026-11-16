@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import styles from './FlightScene.module.css';
 
 const positions = [
@@ -21,8 +22,10 @@ function Plane() {
 
 /** A decorative flight field with one accessible plane button per project. */
 export default function FlightScene({ projects = [], onSelect }) {
+  const [paused, setPaused] = useState(false);
   return (
-    <div className={styles.scene} aria-label="Project flight map">
+    <div className={styles.scene} role="region" aria-label="Project flight map" data-paused={paused}>
+      <button type="button" className={styles.motionToggle} aria-pressed={paused} onClick={() => setPaused((previous) => !previous)}>Pause flight animation</button>
       <div className={styles.skyGrain} aria-hidden="true" />
       <div className={styles.orbitOne} aria-hidden="true" />
       <div className={styles.orbitTwo} aria-hidden="true" />
@@ -52,7 +55,8 @@ export default function FlightScene({ projects = [], onSelect }) {
             className={styles.flight}
             style={{ left: position.left, top: position.top, '--flight-delay': position.delay, '--plane-rotation': position.rotate }}
             onClick={() => onSelect?.(project)}
-            aria-label={`Open project: ${project.title}`}
+            aria-label={`Open project: ${String(index + 1).padStart(2, '0')} ${project.title}`}
+            aria-haspopup="dialog"
           >
             <span className={styles.planeWrap}><Plane /></span>
             <span className={styles.tag}><span>{String(index + 1).padStart(2, '0')}</span> {project.title}</span>
