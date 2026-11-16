@@ -1,8 +1,11 @@
 import Head from 'next/head'
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import dynamic from 'next/dynamic'
 import FlightScene from '../components/FlightScene'
 import { projects } from '../portfolio'
 import styles from '../styles/Home.module.css'
+
+const CadViewer = dynamic(() => import('../components/CadViewer'), { ssr: false })
 
 const themeKey = 'portfolio-theme'
 const themeEvent = 'portfolio-theme-change'
@@ -32,6 +35,10 @@ function subscribeTheme(callback) {
 
 export default function Home() {
   const [selected, setSelected] = useState(null)
+  const [projectTabs, setProjectTabs] = useState({})
+  const sheetRef = useRef(null)
+  const activeTab = selected ? (projectTabs[selected.id] || 'notes') : 'notes'
+  const selectTab = (tab) => setProjectTabs((previous) => ({ ...previous, [selected.id]: tab }))
   const theme = useSyncExternalStore(subscribeTheme, getTheme, () => 'light')
   const trigger = useRef(null)
   useEffect(() => {
@@ -51,7 +58,13 @@ export default function Home() {
     if (!selected) return
     const closeOnEscape = (event) => {
       if (event.key === 'Escape') setSelected(null)
-      if (event.key === 'Tab') event.preventDefault()
+      if (event.key === 'Tab') {
+        const focusable = [...sheetRef.current.querySelectorAll('button, a[href], [tabindex]:not([tabindex="-1"])')].filter((element) => !element.disabled && element.offsetParent !== null && !element.closest('[hidden]'))
+        if (!focusable.length) return
+        const first = focusable[0], last = focusable[focusable.length - 1]
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus() }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus() }
+      }
     }
     window.addEventListener('keydown', closeOnEscape)
     return () => { window.removeEventListener('keydown', closeOnEscape); trigger.current?.focus() }
@@ -67,6 +80,23 @@ export default function Home() {
         <section id="contact" className={styles.contact}><div><p className={styles.eyebrow}>NEXT DESTINATION &nbsp; / &nbsp; 03</p><h2>Let’s make<br /><em>something.</em></h2></div><p>Add your email, résumé, and professional links here when you’re ready to share your portfolio.</p></section>
       </main><footer className={styles.footer}><span>✳ &nbsp; WORK IN FLIGHT</span><span>MADE FOR IDEAS THAT GO PLACES</span><a href="#top">BACK TO TOP ↑</a></footer>
     </div>
-    {selected && <div className={styles.overlay} onClick={() => setSelected(null)}><section className={styles.sheet} role="dialog" aria-modal="true" aria-labelledby="sheet-title" onClick={(event) => event.stopPropagation()}><button className={styles.close} onClick={() => setSelected(null)} autoFocus aria-label="Close project">×</button><p className={styles.eyebrow}>PROJECT FIELD NOTES &nbsp; / &nbsp; {selected.category}</p><span className={styles.stamp}>WORK<br />IN FLIGHT<br />✳</span><h2 id="sheet-title">{selected.title}</h2><p className={styles.sheetLead}>{selected.summary}</p><div className={styles.rule} /><p className={styles.sheetLabel}>THE STORY</p><p>{selected.description}</p><p className={styles.sheetLabel}>TOOLS &amp; DISCIPLINES</p><div className={styles.tags}>{selected.tags.map((tag) => <span key={tag}>{tag}</span>)}</div><p className={styles.sheetHint}>SAMPLE CONTENT — REPLACE WITH YOUR OWN PROJECT DETAILS.</p></section></div>}
+    {selected && <div className={styles.overlay} onClick={() => setSelected(null)}><section ref={sheetRef} className={styles.sheet} role="dialog" aria-modal="true" aria-labelledby="sheet-title" onClick={(event) => event.stopPropagation()}>
+      <button className={styles.close} onClick={() => setSelected(null)} autoFocus aria-label="Close project">{'\u00D7'}</button>
+      <p className={styles.eyebrow}>PROJECT FIELD NOTES &nbsp; / &nbsp; {selected.category}</p>
+      <h2 id="sheet-title">{selected.title}</h2>
+      <p className={styles.sheetLead}>{selected.summary}</p>
+      <div className={styles.tabs} role="tablist" aria-label="Project details" onKeyDown={(event) => {
+        if (!selected.cadModel || !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return
+        event.preventDefault()
+        const next = event.key === 'Home' ? 'notes' : event.key === 'End' ? 'cad' : activeTab === 'notes' ? 'cad' : 'notes'
+        selectTab(next)
+        document.getElementById(`project-tab-${next}`).focus()
+      }}>
+        <button id="project-tab-notes" role="tab" aria-selected={activeTab === 'notes'} aria-controls="project-panel-notes" tabIndex={activeTab === 'notes' ? 0 : -1} onClick={() => selectTab('notes')}>Field Notes</button>
+        {selected.cadModel && <button id="project-tab-cad" role="tab" aria-selected={activeTab === 'cad'} aria-controls="project-panel-cad" tabIndex={activeTab === 'cad' ? 0 : -1} onClick={() => selectTab('cad')}>CAD Model</button>}
+      </div>
+      <div id="project-panel-notes" role="tabpanel" aria-labelledby="project-tab-notes" hidden={activeTab !== 'notes'} tabIndex={0}><p className={styles.sheetLabel}>THE STORY</p><p>{selected.description}</p><p className={styles.sheetLabel}>TOOLS &amp; DISCIPLINES</p><div className={styles.tags}>{selected.tags.map((tag) => <span key={tag}>{tag}</span>)}</div><p className={styles.sheetHint}>SAMPLE CONTENT &mdash; REPLACE WITH YOUR OWN PROJECT DETAILS.</p></div>
+      {selected.cadModel && <div id="project-panel-cad" role="tabpanel" aria-labelledby="project-tab-cad" hidden={activeTab !== 'cad'} tabIndex={0}>{activeTab === 'cad' && <><div className={styles.cadHeading}><div><p className={styles.sheetLabel}>SAMPLE CAD MODEL</p><h3>{selected.cadModel.name}</h3></div></div><dl className={styles.cadMetadata}>{[['Material', selected.cadModel.material], ['Mass', selected.cadModel.mass], ['Status', selected.cadModel.status]].filter(([, value]) => value).map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl><CadViewer modelType={selected.cadModel.modelType} color={selected.cadModel.color} dimensions={selected.cadModel.dimensions} /></>}</div>}
+    </section></div>}
   </>
 }
